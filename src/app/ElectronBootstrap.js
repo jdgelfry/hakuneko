@@ -9,6 +9,9 @@ const trayTooltipRestore = 'HakuNeko\nClick to show window';
 module.exports = class ElectronBootstrap {
 
     constructor(configuration, logger) {
+        if(typeof electron.app.allowRendererProcessReuse === 'boolean') {
+            electron.app.allowRendererProcessReuse = true;
+        }
         this._logger = logger || new ConsoleLogger(ConsoleLogger.LEVEL.Warn);
         this._configuration = configuration;
         this._window = null;

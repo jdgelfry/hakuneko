@@ -12,8 +12,10 @@ module.exports = class UpdateServerManager {
             // NOTE: simple hack to check if URL is valid (must not throw error)
             url.parse(applicationUpdateURL, true).hostname.length;
             this._applicationUpdateURL = applicationUpdateURL;
+            this._enabled = true;
         } catch(error) {
             this._logger.warn('Initialization of "UpdateServerManager" failed!', error);
+            this._enabled = false;
             this._applicationUpdateURL = undefined;
         }
     }
@@ -34,6 +36,10 @@ module.exports = class UpdateServerManager {
             uri = options['url'];
         }
         return uri.startsWith('https:') ? https : http;
+    }
+
+    isAvailable() {
+        return this._enabled === true && typeof this._applicationUpdateURL === 'string' && this._applicationUpdateURL.length > 0;
     }
 
     /**
@@ -71,6 +77,9 @@ module.exports = class UpdateServerManager {
      * @returns {Promise<UpdatePackageInfo>}
      */
     getUpdateInfo() {
+        if(!this.isAvailable()) {
+            return Promise.reject(new Error('Update server not configured.'));
+        }
         return this._request(this._applicationUpdateURL)
             .then(data => {
                 let link = data.toString('utf8').trim();
