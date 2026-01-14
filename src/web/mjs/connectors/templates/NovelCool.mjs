@@ -34,18 +34,18 @@ export default class NovelCool extends Connector {
         while (more_pages) {
             let request = new Request(new URL(this.manga_page_query.replace('{page}', page), this.url), this.requestOptions);
             let data = await fetch(request);
+            let html = await data.text();
+            let dom = this.createDOM(html);
+            let items = [...dom.querySelectorAll( this.manga_selector )];
 
-            if ( data.url === this.url+this.manga_page_query.replace('{page}', page++) ) {
-                data = this.createDOM(await data.text());
-                data = [...data.querySelectorAll( this.manga_selector )];
-
-                mangas.push(...data.map(manga => {
+            if ( items.length > 0 ) {
+                mangas.push(...items.map(manga => {
                     return {
                         id: this.getRootRelativeOrAbsoluteLink(manga, this.url),
                         title: manga.title.trim()
                     };
                 }));
-
+                page++;
             } else {
                 more_pages = false;
             }
